@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Заголовок -->
+        <TextView
+            android:id="@+id/tvCourseTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Название курса"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Информация о курсе -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvInstructor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Преподаватель: "
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Длительность: "
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvHours"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Кол-во часов: "
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Цена: "
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FF5722"/>
+
+        </LinearLayout>
+
+        <!-- Описание -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Описание курса:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Описание"
+            android:textSize="14sp"
+            android:padding="16dp"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Программа курса -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Программа курса:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvSyllabus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Программа"
+            android:textSize="14sp"
+            android:padding="16dp"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Требования -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Требования:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvRequirements"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Требования"
+            android:textSize="14sp"
+            android:padding="16dp"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Кнопки -->
+        <Button
+            android:id="@+id/btnEnroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Записаться на курс"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btnCopyEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📧 Скопировать email преподавателя"
+            android:backgroundTint="#2196F3"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Назад"
+            android:backgroundTint="#757575"
+            android:textColor="#FFFFFF"/>
+
+    </LinearLayout>
+</ScrollView>

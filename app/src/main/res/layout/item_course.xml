@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:drawable/dialog_holo_light_frame"
+    android:padding="16dp"
+    android:layout_marginBottom="8dp">
+
+    <!-- Заголовок курса -->
+    <TextView
+        android:id="@+id/courseTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Название курса"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#333333"/>
+
+    <!-- Описание курса -->
+    <TextView
+        android:id="@+id/courseDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Описание курса"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:layout_marginTop="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <!-- Категория -->
+        <TextView
+            android:id="@+id/courseCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Категория"
+            android:padding="8dp"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Длительность -->
+        <TextView
+            android:id="@+id/courseDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Длительность"
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:layout_marginEnd="8dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical">
+
+        <!-- Цена -->
+        <TextView
+            android:id="@+id/coursePrice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Цена"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FF5722"/>
+
+        <!-- Кнопка подачи заявки -->
+        <Button
+            android:id="@+id/enrollButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Подать заявку"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"/>
+
+    </LinearLayout>
+
+</LinearLayout>
