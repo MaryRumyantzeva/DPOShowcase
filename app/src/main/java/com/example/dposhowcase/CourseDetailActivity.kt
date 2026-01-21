@@ -3,12 +3,17 @@ package com.example.dposhowcase
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class CourseDetailActivity : AppCompatActivity() {
 
@@ -16,11 +21,15 @@ class CourseDetailActivity : AppCompatActivity() {
         const val EXTRA_COURSE = "course"
     }
 
+    private lateinit var sharedPrefManager: SharedPrefManager
+    private lateinit var currentCourse: Course
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_course_detail)
 
-        // Получаем объект курса
+        sharedPrefManager = SharedPrefManager(this)
+
         val course = intent.getParcelableExtra<Course>(EXTRA_COURSE)
 
         if (course == null) {
@@ -28,6 +37,8 @@ class CourseDetailActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        currentCourse = course
 
         // Заполняем данные
         findViewById<TextView>(R.id.tvCourseTitle).text = course.title
@@ -45,16 +56,19 @@ class CourseDetailActivity : AppCompatActivity() {
         val requirementsText = course.requirements.joinToString("\n• ", "• ")
         findViewById<TextView>(R.id.tvRequirements).text = requirementsText
 
+        // Обновляем кнопку записи
+        updateEnrollButton()
+
         // Кнопка записи
         findViewById<Button>(R.id.btnEnroll).setOnClickListener {
-            showEnrollmentDialog(course)
+            checkAndEnroll()
         }
 
-        // Кнопка копирования email - ИСПРАВЛЕНО!
+        // Кнопка копирования email
         findViewById<Button>(R.id.btnCopyEmail).setOnClickListener {
             val clipboard = getSystemService(ClipboardManager::class.java)
             val clip = ClipData.newPlainText("Email преподавателя", course.contact_email)
-            (clipboard as ClipboardManager).setPrimaryClip(clip)
+            clipboard.setPrimaryClip(clip)
             Toast.makeText(this, "Email скопирован: ${course.contact_email}", Toast.LENGTH_SHORT).show()
         }
 
@@ -64,45 +78,137 @@ class CourseDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun showEnrollmentDialog(course: Course) {
-        // Проверь, существует ли файл dialog_enrollment.xml!
-        try {
-            val dialogView = layoutInflater.inflate(R.layout.dialog_enrollment, null)
-            val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Запись на курс: ${course.title}")
-                .setView(dialogView)
-                .setPositiveButton("Отправить заявку") { _, _ ->
-                    val name = dialogView.findViewById<TextInputEditText>(R.id.etName)?.text?.toString() ?: ""
-                    val email = dialogView.findViewById<TextInputEditText>(R.id.etEmail)?.text?.toString() ?: ""
-                    val phone = dialogView.findViewById<TextInputEditText>(R.id.etPhone)?.text?.toString() ?: ""
+    override fun onResume() {
+        super.onResume()
+        // Обновляем кнопку при возвращении на экран
+        updateEnrollButton()
+    }
 
-                    if (name.isBlank() || email.isBlank()) {
-                        Toast.makeText(this, "Заполните имя и email", Toast.LENGTH_SHORT).show()
-                        return@setPositiveButton
-                    }
+    private fun updateEnrollButton() {
+        val enrollButton = findViewById<Button>(R.id.btnEnroll)
+        val user = sharedPrefManager.getUser()
 
-                    saveEnrollment(course, name, email, phone)
-                }
-                .setNegativeButton("Отмена", null)
-                .create()
-
-            dialog.show()
-        } catch (e: Exception) {
-            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
-            e.printStackTrace()
+        if (user == null) {
+            // Пользователь не авторизован
+            enrollButton.text = "Войти и записаться"
+            enrollButton.isEnabled = true
+            enrollButton.setBackgroundColor(Color.parseColor("#FF9800")) // Оранжевый
+            enrollButton.setTextColor(Color.WHITE)
+        } else if (user.hasEnrolledInCourse(currentCourse.id)) {
+            // Пользователь уже записан на этот курс
+            enrollButton.text = "✓ Вы уже записаны"
+            enrollButton.isEnabled = false
+            enrollButton.setBackgroundColor(Color.parseColor("#4CAF50")) // Зеленый
+            enrollButton.setTextColor(Color.WHITE)
+        } else {
+            // Пользователь авторизован, но не записан
+            enrollButton.text = "Записаться на курс"
+            enrollButton.isEnabled = true
+            enrollButton.setBackgroundColor(Color.parseColor("#2196F3")) // Синий
+            enrollButton.setTextColor(Color.WHITE)
         }
     }
 
-    private fun saveEnrollment(course: Course, name: String, email: String, phone: String) {
-        Toast.makeText(
-            this,
-            " Заявка отправлена!\n\n" +
-                    "Курс: ${course.title}\n" +
-                    "Ваше имя: $name\n" +
-                    "Email: $email\n" +
-                    "Телефон: ${if (phone.isBlank()) "не указан" else phone}\n\n" +
-                    "Мы свяжемся с вами в течение 24 часов!",
-            Toast.LENGTH_LONG
-        ).show()
+    private fun checkAndEnroll() {
+        val user = sharedPrefManager.getUser()
+
+        if (user == null) {
+            // Неавторизованный пользователь
+            AlertDialog.Builder(this)
+                .setTitle("Требуется регистрация")
+                .setMessage("Для записи на курс нужно один раз ввести ваши данные. После этого вы сможете записываться на любые курсы без повторного ввода.")
+                .setPositiveButton("Ввести данные") { _, _ ->
+                    // Переходим в профиль для регистрации
+                    startActivity(Intent(this, ProfileActivity::class.java))
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
+        } else if (user.hasEnrolledInCourse(currentCourse.id)) {
+            // Уже записан
+            Toast.makeText(this, "Вы уже записаны на этот курс!", Toast.LENGTH_SHORT).show()
+        } else {
+            // Можно записываться
+            showEnrollmentConfirmation(user)
+        }
     }
-}
+
+    private fun showEnrollmentConfirmation(user: User) {
+        AlertDialog.Builder(this)
+            .setTitle("Подтверждение записи")
+            .setMessage("Вы действительно хотите записаться на курс:\n\n" +
+                    "📚 ${currentCourse.title}\n" +
+                    "💰 ${currentCourse.getFormattedPrice()}\n" +
+                    "⏱ ${currentCourse.duration}\n\n" +
+                    "Ваши данные:\n" +
+                    "👤 ${user.name}\n" +
+                    "📧 ${user.email}\n" +
+                    "${if (user.phone.isNotBlank()) "📞 ${user.phone}\n" else ""}")
+            .setPositiveButton("✅ Да, записаться") { _, _ ->
+                enrollUserToCourse(user)
+            }
+            .setNegativeButton("❌ Отмена", null)
+            .show()
+    }
+
+    private fun enrollUserToCourse(user: User) {
+        try {
+            // 1. Обновляем локальные данные пользователя
+            val updatedUser = user.copy(
+                enrolledCourses = user.enrolledCourses + currentCourse.id
+            )
+            sharedPrefManager.saveUser(updatedUser)
+
+            // 2. Обновляем кнопку
+            updateEnrollButton()
+
+            // 3. Показываем уведомление
+            Toast.makeText(
+                this,
+                "✅ Вы успешно записались на курс!\n\n" +
+                        "Курс: ${currentCourse.title}\n" +
+                        "На ваш email (${user.email}) отправлено подтверждение.",
+                Toast.LENGTH_LONG
+            ).show()
+
+            // 4. Сохраняем заявку в Firebase
+            saveEnrollmentToFirebase(user)
+
+            // 5. Синхронизируем данные пользователя с Firebase (ДОБАВЬТЕ ЭТОТ ВЫЗОВ ЗДЕСЬ!)
+            syncUserWithFirebase(updatedUser)
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun syncUserWithFirebase(user: User) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                FirebaseRepository.updateUserCourses(user.id, user.enrolledCourses)
+            } catch (e: Exception) {
+                android.util.Log.e("CourseDetail", "Ошибка синхронизации с Firebase", e)
+            }
+        }
+    }
+
+    private fun saveEnrollmentToFirebase(user: User) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val success = FirebaseRepository.saveEnrollmentToFirestore(currentCourse, user)
+
+                runOnUiThread {
+                    if (success) {
+                        // Дополнительное сообщение о сохранении в БД
+                        Toast.makeText(
+                            this@CourseDetailActivity,
+                            "✅ Заявка сохранена в базе данных",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                // Не показываем ошибку пользователю, просто логируем
+                android.util.Log.e("CourseDetail", "Firebase error", e)
+            }
+        }
+    }}
